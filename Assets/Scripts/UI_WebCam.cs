@@ -10,21 +10,17 @@ public class UI_WebCam : MonoBehaviour
 
 	private void Update()
 	{
-		if (webCamImg.texture == null)
+		if (!physicCamera.TryGetWebCamCorrectInfo(out var info))
 			return;
 
-		var correctInfo = physicCamera.GetWebCamCorrectInfo();
-
-		webCamAspectRatioFitter.aspectRatio      = correctInfo.aspect;
-		webCamImg.rectTransform.localEulerAngles = new Vector3(0, 0, correctInfo.rotation);
-		webCamImg.rectTransform.localScale       = new Vector3(1, correctInfo.scale, 1);
+		webCamAspectRatioFitter.aspectRatio      = info.aspect;
+		webCamImg.rectTransform.localEulerAngles = new Vector3(0, 0, info.rotation);
+		webCamImg.rectTransform.localScale       = new Vector3(1, info.scale, 1);
 	}
 
 	public void Button_Enable()
 	{
-		physicCamera.EnableCamera();
-
-		webCamImg.texture = physicCamera.GetWebCamTexture();
+		webCamImg.texture = physicCamera.EnableCamera();
 	}
 
 	public void Button_Disable()

@@ -2,12 +2,12 @@
 
 public class PhysicCamera
 {
-	private WebCamTexture webCamTexture;
+	public WebCamTexture WebCamTexture { get; private set; }
 
 	/// <summary>
 	/// 啟用相機
 	/// </summary>
-	public void EnableCamera()
+	public WebCamTexture EnableCamera()
 	{
 		var devices = WebCamTexture.devices;
 
@@ -16,19 +16,21 @@ public class PhysicCamera
 			if (device.isFrontFacing)
 				continue;
 
-			webCamTexture = new WebCamTexture(device.name, Screen.width, Screen.height);
+			WebCamTexture = new WebCamTexture(device.name, Screen.width, Screen.height);
 
 			break;
 		}
 
-		if (webCamTexture == null)
+		if (WebCamTexture == null)
 		{
 			Debug.LogError("沒有找到後置相機");
 
-			return;
+			return null;
 		}
 
-		webCamTexture.Play();
+		WebCamTexture.Play();
+
+		return WebCamTexture;
 	}
 
 	/// <summary>
@@ -36,10 +38,10 @@ public class PhysicCamera
 	/// </summary>
 	public void PauseCamera()
 	{
-		if (webCamTexture == null)
+		if (WebCamTexture == null)
 			return;
 
-		webCamTexture.Pause();
+		WebCamTexture.Pause();
 	}
 
 	/// <summary>
@@ -47,11 +49,11 @@ public class PhysicCamera
 	/// </summary>
 	public void DisableCamera()
 	{
-		if (webCamTexture == null)
+		if (WebCamTexture == null)
 			return;
 
-		webCamTexture.Stop();
-		webCamTexture = null;
+		WebCamTexture.Stop();
+		WebCamTexture = null;
 	}
 
 	/// <summary>
@@ -59,23 +61,26 @@ public class PhysicCamera
 	/// </summary>
 	public void PlayCamera()
 	{
-		if (webCamTexture == null)
+		if (WebCamTexture == null)
 			return;
 
-		webCamTexture.Play();
+		WebCamTexture.Play();
 	}
 
-	public WebCamTexture GetWebCamTexture() => webCamTexture;
-
-	public WebCamCorrectInfo GetWebCamCorrectInfo()
+	public bool TryGetWebCamCorrectInfo(out WebCamCorrectInfo info)
 	{
-		// 矯正相機資訊，例如上下左右相反、解析度不正確
-		return new WebCamCorrectInfo
+		if (WebCamTexture == null)
 		{
-			aspect   = (float)webCamTexture.width / webCamTexture.height,
-			rotation = -webCamTexture.videoRotationAngle,
-			scale    = webCamTexture.videoVerticallyMirrored ? -1f : 1f,
-		};
+			info = default;
+
+			return false;
+		}
+
+		info.aspect   = (float)WebCamTexture.width / WebCamTexture.height;
+		info.rotation = WebCamTexture.videoRotationAngle;
+		info.scale    = WebCamTexture.videoVerticallyMirrored ? -1 : 1;
+
+		return true;
 	}
 
 	public struct WebCamCorrectInfo
